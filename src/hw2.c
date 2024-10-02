@@ -26,7 +26,10 @@ void print_packet(unsigned int packet[])
         printf("Packet Type: Read\n");
     else if (packet_type == 01001010)
         printf("Packet Type: Completion\n");
-    // else printf("error\n");
+    else {
+        printf("No Output (invalid packet)");
+        return;
+    }
 
     printf("Address: %u\n", address);
     printf("Length: %u\n", length);
@@ -44,7 +47,6 @@ void print_packet(unsigned int packet[])
     }
 
     printf("\n");
-    (void) packet;
 }
 
 void store_values(unsigned int packets[], char *memory)
