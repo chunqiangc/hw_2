@@ -21,11 +21,11 @@ void print_packet(unsigned int packet[])
     unsigned int first_BE = int1 & 0x0F;
 
     if (packet_type == 0100)
-        printf("Packet Type : Write\n");
+        printf("Packet Type: Write\n");
     else if (packet_type == 00)
-        printf("Packet Type : Read\n");
+        printf("Packet Type: Read\n");
     else if (packet_type == 01001010)
-        printf("Packet Type : Completion\n");
+        printf("Packet Type: Completion\n");
     // else printf("error\n");
 
     printf("Address: %u\n", address);
@@ -39,10 +39,11 @@ void print_packet(unsigned int packet[])
         printf("Data: ");
         for (unsigned int i = 0; i < length; i++) {
             unsigned int data = packet[3 + i];
-            printf("%d  ", (int)data);
+            printf("%d ", (int)data);
         }
     }
 
+    printf("\n");
     (void) packet;
 }
 
