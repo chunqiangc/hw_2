@@ -34,9 +34,9 @@ void print_packet(unsigned int packet[])
     printf("Tag: %u\n", tag);
     printf("Last BE: %u\n", last_BE);
     printf("1st BE: %u\n", first_BE);
+    printf("Data: ");
 
     if (packet_type == 0100) {
-        printf("Data: ");
         for (unsigned int i = 0; i < length; i++) {
             unsigned int data = packet[3 + i];
             printf("%d ", (int)data);
