@@ -14,6 +14,9 @@ int main() {
     0x05888192
     };
 
+    char *mem = (char*)malloc(1000000);
+
     print_packet(packet);
+    store_values(packet, mem);
     return 0;
 }

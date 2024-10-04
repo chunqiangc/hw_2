@@ -58,6 +58,9 @@ void store_values(unsigned int packets[], char *memory)
         unsigned int int2 = packets[i+2];
 
         unsigned int packet_type = (int0 >> 24) & 0xFF;
+        if (packet_type != 0100)
+            break;
+
         unsigned int address = (int2);
         unsigned int length = int0 & 0x2FF;
         // unsigned int requester_id = (int1 >> 16) & 0xFFFF;
@@ -65,10 +68,27 @@ void store_values(unsigned int packets[], char *memory)
         unsigned int last_BE = (int1 >> 4) & 0x0F;
         unsigned int first_BE = int1 & 0x0F;
 
+        // printf("Address: %u\n", address);
+        // printf("Length: %u\n", length);
+        // printf("Requester ID: %u\n", requester_id);
+        // printf("Tag: %u\n", tag);
+        // printf("Last BE: %u\n", last_BE);
+        // printf("1st BE: %u\n", first_BE);
+        // printf("Data: ");
+
+        // if (packet_type == 0100) {
+        //     for (unsigned int j = 0; j < length; j++) {
+        //         unsigned int data = packets[i + 3 + j];
+        //         printf("%d ", (int)data);
+        //     }
+        // }
+
+        // printf("\n");
+
         if (packet_type != 0100)
             break;
 
-        if (address > 1048576) {
+        if (address > 1000000) {
             i += 3 + length;
             continue;
         }
@@ -79,28 +99,32 @@ void store_values(unsigned int packets[], char *memory)
             int start_address = address + j * 4;
 
             if (j == 0) {
-                for (unsigned int byte = 0; byte < 4; byte++) {
-                    if (byte < first_BE)
-                        if (start_address + byte < 1048576)
-                            memory[start_address + byte] = (data >> (byte * 8)) & 0xFF;
-                }
+                if (first_BE & 0x01) 
+                    memory[start_address] = data & 0xFF;
+                if (first_BE & 0x02) 
+                    memory[start_address + 1] = (data >> 8) & 0xFF;
+                if (first_BE & 0x04) 
+                    memory[start_address + 2] = (data >> 16) & 0xFF;
+                if (first_BE & 0x08) 
+                    memory[start_address + 3] = (data >> 24) & 0xFF;
             }
-            else if (j < length - 1) {
-                for (unsigned int byte = 0; byte < 4; byte++) {
-                    if (start_address + byte < 1048576)
-                        memory[start_address + byte] = (data >> (byte * 8)) & 0xFF;
-                }
+            else if (j == length - 1) {
+                if (last_BE & 0x01) 
+                    memory[start_address] = data & 0xFF;
+                if (last_BE & 0x02) 
+                    memory[start_address + 1] = (data >> 8) & 0xFF;
+                if (last_BE & 0x04) 
+                    memory[start_address + 2] = (data >> 16) & 0xFF;
+                if (last_BE & 0x08) 
+                    memory[start_address + 3] = (data >> 24) & 0xFF;
             }
             else {
                 for (unsigned int byte = 0; byte < 4; byte++) {
-                    if (byte > last_BE)
-                        if (start_address + byte < 1048576)
-                            memory[start_address + byte] = (data >> (byte * 8)) & 0xFF;
+                    memory[start_address + byte] = (data >> (byte * 8)) & 0xFF;
                 }
             }
-            i += length + 3;
         }        
-
+        i += length + 3;
     }
     (void)packets;
     (void)memory;
