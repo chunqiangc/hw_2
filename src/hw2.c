@@ -51,6 +51,57 @@ void print_packet(unsigned int packet[])
 
 void store_values(unsigned int packets[], char *memory)
 {
+
+    for (unsigned int i = 0; ; ) {
+        unsigned int int0 = packets[i];
+        unsigned int int1 = packets[i+1];
+        unsigned int int2 = packets[i+2];
+
+        unsigned int packet_type = (int0 >> 24) & 0xFF;
+        unsigned int address = (int2);
+        unsigned int length = int0 & 0x2FF;
+        // unsigned int requester_id = (int1 >> 16) & 0xFFFF;
+        // unsigned int tag = (int1 >> 8) & 0xFF;
+        unsigned int last_BE = (int1 >> 4) & 0x0F;
+        unsigned int first_BE = int1 & 0x0F;
+
+        if (packet_type != 0100)
+            break;
+
+        if (address > 1048576) {
+            i += 3 + length;
+            continue;
+        }
+
+        for (unsigned int j = 0; j < length; j++) {
+            unsigned int data = packets[i + 3 + j];
+
+            int start_address = address + j * 4;
+
+            if (j == 0) {
+                for (unsigned int byte = 0; byte < 4; byte++) {
+                    if (byte < first_BE)
+                        if (start_address + byte < 1048576)
+                            memory[start_address + byte] = (data >> (byte * 8)) & 0xFF;
+                }
+            }
+            else if (j < length - 1) {
+                for (unsigned int byte = 0; byte < 4; byte++) {
+                    if (start_address + byte < 1048576)
+                        memory[start_address + byte] = (data >> (byte * 8)) & 0xFF;
+                }
+            }
+            else {
+                for (unsigned int byte = 0; byte < 4; byte++) {
+                    if (byte > last_BE)
+                        if (start_address + byte < 1048576)
+                            memory[start_address + byte] = (data >> (byte * 8)) & 0xFF;
+                }
+            }
+            i += length + 3;
+        }        
+
+    }
     (void)packets;
     (void)memory;
 }
