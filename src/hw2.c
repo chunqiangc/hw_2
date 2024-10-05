@@ -132,6 +132,7 @@ void store_values(unsigned int packets[], char *memory)
 
 unsigned int* create_completion(unsigned int packets[], const char *memory)
 {
+    
     (void)packets;
     (void)memory;
 	return NULL;
