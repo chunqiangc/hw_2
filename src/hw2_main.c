@@ -6,17 +6,13 @@
 int main() {
 	//Write your code here
     unsigned int packet[] = {
-    0x40000003,
-    0x00000C75,
-    0x000000CC,
-    0x00845FED,
-    0xFFFF668F,
-    0x05888192
+    0x00000001,
+    0x0000020F,
+    0x00000010
     };
 
     char *mem = (char*)malloc(1000000);
 
-    print_packet(packet);
-    store_values(packet, mem);
+    create_completion(packet, mem);
     return 0;
 }
