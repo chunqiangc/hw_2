@@ -5,6 +5,16 @@
 
 #include "hw2.h"
 
+void print_binary(unsigned int word) {
+    unsigned int dword = word;
+    for (int bit = 0; bit < 32; bit++) {
+        printf("%d", word & 0x80000000 ? 1 : 0);
+        word <<= 1;
+    }
+    printf(" %d", dword);
+    printf("\n");
+}
+
 void print_packet(unsigned int packet[])
 {
     unsigned int int0 = packet[0];
@@ -126,9 +136,9 @@ unsigned int* create_completion(unsigned int packets[], const char *memory)
         if (packet_type != 00)
             break;
 
-        unsigned int address = (int2 >> 2);
-        unsigned int length = int0 & 0x2FF;
-        unsigned int requester_id = (int1 >> 16) & 0xFFFF;
+        unsigned int address = int2;
+        unsigned int length = int0 & 0x3FF;
+        unsigned int requester_id = (int1 >> 16); 
         unsigned int tag = (int1 >> 8) & 0xFF;
         unsigned int byte_count = length * 4;
 
@@ -142,24 +152,16 @@ unsigned int* create_completion(unsigned int packets[], const char *memory)
             read_length = to_boundary / 4; 
         }
 
-        // unsigned int beforeBound = 0;
-        // for (unsigned int j = address; j < address + length * 4; j++) {
-        //     if (j == 0x4000) {
-        //         beforeBound = (j - address) / 4;
-        //         break;
-        //     }
-        //     beforeBound = length;
-        // }
-
         unsigned int lower_address = current_address & 0x7F;
         completions[index++] = 0x4A000000 | read_length;
         completions[index++] = 0x00DC0000 | remaining_bytes;
         completions[index++] = (((requester_id << 8) | tag) << 8) | lower_address;
 
+        printf("read_length: %d\n", read_length);
         for (unsigned int j = 0; j < read_length; j++) {
             unsigned int data = 0;
-            for (unsigned int k = 0; k < 4; k++) {
-                data = data | (unsigned char)(memory[current_address + j * 4 + k] << (8 * k));
+            for (int k = 3; k >= 0; k--) {
+                data |= (unsigned int) (memory[current_address + (4 * j) + k] & 0xFF) << (k * 8);
             }
             completions[index++] = data;
         }
@@ -175,7 +177,7 @@ unsigned int* create_completion(unsigned int packets[], const char *memory)
 
             for (unsigned int j = 0; j < remaining_bytes; j++) {
                 unsigned int data = 0;
-                for (unsigned int k = 0; k < 4; k++) {
+                for (int k = 3; k >= 0; k--) {
                     data = data | (memory[current_address + j * 4 + k] << (8 * k));
                 }
                 completions[index++] = data;
@@ -184,25 +186,12 @@ unsigned int* create_completion(unsigned int packets[], const char *memory)
     
 
         i += 3;
-        // if (packet_type == 00)
-        //     printf("Packet Type: Read\n");
-        // printf("Address: %u\n", address);
-        // printf("Length: %u\n", length);
-        // printf("Requester ID: %u\n", requester_id);
-        // printf("Tag: %u\n", tag);
-        // printf("Data: \n");
     }
-        
-
-
-        // for (int j = 0; j < index; j++ ) {
-        //     for (int k = 0; k < 32; ++k) {
-        //         if (completions[j] >> k & 0x1) putchar('1');
-        //         else putchar('0');
-        //     }
-        //     printf("\n");
-        // }
     (void)packets;
     (void)memory;
+    for (int i = 0; i < 10; i++) {
+        print_binary(completions[i]);
+    }
+
 	return completions;
 }

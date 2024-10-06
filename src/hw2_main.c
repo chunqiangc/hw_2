@@ -10,9 +10,9 @@ int main() {
     0x0000020F,
     0x00000010
     };
+ 
 
     char *mem = (char*)malloc(1000000);
-
     create_completion(packet, mem);
     return 0;
 }

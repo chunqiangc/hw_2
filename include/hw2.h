@@ -4,6 +4,8 @@
 #define INFO(...) do {fprintf(stderr, "[          ] [ INFO ] "); fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n"); fflush(stderr);} while(0)
 #define ERROR(...) do {fprintf(stderr, "[          ] [ ERR  ] "); fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n"); fflush(stderr);} while(0) 
 
+void print_binary(unsigned int word);
+
 void print_packet(unsigned int packet[]);
 
 void store_values(unsigned int packets[], char *memory);
