@@ -126,7 +126,7 @@ unsigned int* create_completion(unsigned int packets[], const char *memory)
     if (!completions) return NULL;
     int index = 0;
 
-    for (int i = 0; ; ) {
+    for (int i = 0; i < 6; i += 3 ) {
         
         unsigned int int0 = packets[i];
         unsigned int int1 = packets[i + 1];
@@ -207,7 +207,7 @@ unsigned int* create_completion(unsigned int packets[], const char *memory)
         }
 
 
-        i += 3;
+        // i += 3;
     }
     (void)packets;
     (void)memory;
