@@ -113,6 +113,7 @@ void store_values(unsigned int packets[], char *memory)
 unsigned int* create_completion(unsigned int packets[], const char *memory)
 {
     unsigned int* completions = (unsigned int *)malloc(1000000 * sizeof(unsigned int));
+    if (!completions) return NULL;
     int index = 0;
 
     for (int i = 0; ; ) {
@@ -129,58 +130,69 @@ unsigned int* create_completion(unsigned int packets[], const char *memory)
         unsigned int length = int0 & 0x2FF;
         unsigned int requester_id = (int1 >> 16) & 0xFFFF;
         unsigned int tag = (int1 >> 8) & 0xFF;
-        unsigned int lower_address = address & 0x7F;
         unsigned int byte_count = length * 4;
 
-        unsigned int beforeBound = 0;
-        for (unsigned int j = address; j < address + length * 4; j++) {
-            if (j == 0x4000) {
-                beforeBound = (j - address) / 4;
-                break;
-            }
-            beforeBound = length;
+        unsigned int remaining_bytes = byte_count;
+        unsigned int current_address = address;
+
+        unsigned int read_length = remaining_bytes / 4;
+        if (current_address % 0x4000 != 0) {
+            unsigned int to_boundary = 0x4000 - (current_address % 0x4000);
+            to_boundary = to_boundary < remaining_bytes ? to_boundary : remaining_bytes;
+            read_length = to_boundary / 4; 
         }
 
-        completions[index++] = 0x4A000000 | length;
-        completions[index++] = 0x00DC0000 | byte_count;
+        // unsigned int beforeBound = 0;
+        // for (unsigned int j = address; j < address + length * 4; j++) {
+        //     if (j == 0x4000) {
+        //         beforeBound = (j - address) / 4;
+        //         break;
+        //     }
+        //     beforeBound = length;
+        // }
+
+        unsigned int lower_address = current_address & 0x7F;
+        completions[index++] = 0x4A000000 | read_length;
+        completions[index++] = 0x00DC0000 | remaining_bytes;
         completions[index++] = (((requester_id << 8) | tag) << 8) | lower_address;
 
-        for (unsigned int j = 0; j < beforeBound; j++) {
+        for (unsigned int j = 0; j < read_length; j++) {
             unsigned int data = 0;
             for (unsigned int k = 0; k < 4; k++) {
-                data = data | (memory[address + j * 4 + k] << (8 * k));
+                data = data | (unsigned char)(memory[current_address + j * 4 + k] << (8 * k));
             }
             completions[index++] = data;
         }
         
-        if (beforeBound != length) {
-            unsigned int afterBound = length - beforeBound;
-            byte_count = afterBound * 4;
-            lower_address = 0x4000 & 0x7F;
+        remaining_bytes -= read_length * 4;
+        current_address += read_length * 4;
 
-            completions[index++] = 0x4A000000 | afterBound;
+        if (read_length != length) { 
+            lower_address = current_address & 0x7F;
+            completions[index++] = 0x4A000000 | remaining_bytes / 4;
             completions[index++] = 0x00DC0000 | byte_count;
             completions[index++] = (((requester_id << 8) | tag) << 8) | lower_address;
 
-            for (unsigned int j = 0; j < afterBound; j++) {
+            for (unsigned int j = 0; j < remaining_bytes; j++) {
                 unsigned int data = 0;
                 for (unsigned int k = 0; k < 4; k++) {
-                    data = data | (memory[0x4000 + k] << (8 * k));
+                    data = data | (memory[current_address + j * 4 + k] << (8 * k));
                 }
                 completions[index++] = data;
             }
         }
     
 
-        i += length + 3;
-    }
+        i += 3;
         // if (packet_type == 00)
         //     printf("Packet Type: Read\n");
         // printf("Address: %u\n", address);
-        // printf("Length: %u\n", beforeBound);
+        // printf("Length: %u\n", length);
         // printf("Requester ID: %u\n", requester_id);
         // printf("Tag: %u\n", tag);
         // printf("Data: \n");
+    }
+        
 
 
         // for (int j = 0; j < index; j++ ) {
