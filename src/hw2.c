@@ -144,6 +144,7 @@ unsigned int* create_completion(unsigned int packets[], const char *memory)
         unsigned int last_BE = (int1 >> 4) & 0x0F;
         unsigned int first_BE = int1 & 0x0F;
 
+        printf("%d %d\n", (int)first_BE, (int)last_BE);
         unsigned int not_first_BE = 0;
         if (!(first_BE & 0x01))
             not_first_BE++;
