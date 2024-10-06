@@ -190,14 +190,14 @@ unsigned int* create_completion(unsigned int packets[], const char *memory)
         
         remaining_bytes -= read_length * 4;
         current_address += read_length * 4;
-
+        printf("read_length: %d\n", ((int)remaining_bytes / 4));
         if (read_length != length) { 
             lower_address = current_address & 0x7F;
             completions[index++] = 0x4A000000 | remaining_bytes / 4;
             completions[index++] = 0x00DC0000 | remaining_bytes;
             completions[index++] = (((requester_id << 8) | tag) << 8) | lower_address;
 
-            for (unsigned int j = 0; j < remaining_bytes; j++) {
+            for (unsigned int j = 0; j < remaining_bytes/4; j++) {
                 unsigned int data = 0;
                 for (int k = 3; k >= 0; k--) {
                     data |= (unsigned int) (memory[current_address + (j * 4) + k]  & 0xFF) << (8 * k);
@@ -205,7 +205,7 @@ unsigned int* create_completion(unsigned int packets[], const char *memory)
                 completions[index++] = data;
             }
         }
-
+        printf("%d \n", index);
 
         // i += 3;
     }
