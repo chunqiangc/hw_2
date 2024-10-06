@@ -120,7 +120,7 @@ void store_values(unsigned int packets[], char *memory)
     (void)memory;
 }
 
-unsigned int* create_completion(unsigned int packets[], const char *memory)
+unsigned int* create_completion(unsigned int packets[], const char *memory) 
 {
     unsigned int* completions = (unsigned int *)malloc(1000000 * sizeof(unsigned int));
     if (!completions) return NULL;
@@ -141,6 +141,28 @@ unsigned int* create_completion(unsigned int packets[], const char *memory)
         unsigned int requester_id = (int1 >> 16); 
         unsigned int tag = (int1 >> 8) & 0xFF;
         unsigned int byte_count = length * 4;
+        printf("%d \n", length);
+        unsigned int last_BE = (int1 >> 4) & 0x0F;
+        unsigned int first_BE = int1 & 0x0F;
+
+        unsigned int not_first_BE = 0;
+        if (!(first_BE & 0x01))
+            not_first_BE++;
+        else if (!(first_BE & 0x02))
+            not_first_BE++;
+        else if (!(first_BE & 0x04))
+            not_first_BE++;
+        else if (!(first_BE & 0x08))
+            not_first_BE++;
+        unsigned int not_last_BE = 0;
+        if (!(last_BE & 0x01))
+            not_last_BE++;
+        else if (!(last_BE & 0x02))
+            not_last_BE++;
+        else if (!(last_BE & 0x03))
+            not_last_BE++;
+        else if (!(last_BE & 0x04))
+            not_last_BE++;
 
         unsigned int remaining_bytes = byte_count;
         unsigned int current_address = address;
@@ -154,7 +176,7 @@ unsigned int* create_completion(unsigned int packets[], const char *memory)
 
         unsigned int lower_address = current_address & 0x7F;
         completions[index++] = 0x4A000000 | read_length;
-        completions[index++] = 0x00DC0000 | remaining_bytes;
+        completions[index++] = 0x00DC0000 | (remaining_bytes - not_first_BE - not_last_BE);
         completions[index++] = (((requester_id << 8) | tag) << 8) | lower_address;
 
         printf("read_length: %d\n", read_length);
@@ -178,12 +200,12 @@ unsigned int* create_completion(unsigned int packets[], const char *memory)
             for (unsigned int j = 0; j < remaining_bytes; j++) {
                 unsigned int data = 0;
                 for (int k = 3; k >= 0; k--) {
-                    data = data | (memory[current_address + j * 4 + k] << (8 * k));
+                    data |= (unsigned int) (memory[current_address + (j * 4) + k]  & 0xFF) << (8 * k);
                 }
                 completions[index++] = data;
             }
         }
-    
+
 
         i += 3;
     }
