@@ -210,7 +210,7 @@ unsigned int* create_completion(unsigned int packets[], const char *memory)
     }
     (void)packets;
     (void)memory;
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 30; i++) {
         print_binary(completions[i]);
     }
 
