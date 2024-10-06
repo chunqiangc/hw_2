@@ -55,8 +55,6 @@ void print_packet(unsigned int packet[])
             printf("%d ", (int)data);
         }
     }
-
-    printf("\n");
 }
 
 void store_values(unsigned int packets[], char *memory)
